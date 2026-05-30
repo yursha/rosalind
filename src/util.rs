@@ -3,17 +3,42 @@ use std::str::FromStr;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RnaBase {
-    A, C, G, U,
+    A,
+    C,
+    G,
+    U,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DnaBase {
-    A, C, G, T,
+    A,
+    C,
+    G,
+    T,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AminoAcid {
-    A, R, N, D, C, Q, E, G, H, I, L, K, M, F, P, S, T, W, Y, V,
+    A,
+    R,
+    N,
+    D,
+    C,
+    Q,
+    E,
+    G,
+    H,
+    I,
+    L,
+    K,
+    M,
+    F,
+    P,
+    S,
+    T,
+    W,
+    Y,
+    V,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -28,7 +53,10 @@ pub struct RnaSequence(pub Vec<RnaBase>);
 impl fmt::Display for DnaBase {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let c = match self {
-            DnaBase::A => 'A', DnaBase::C => 'C', DnaBase::G => 'G', DnaBase::T => 'T',
+            DnaBase::A => 'A',
+            DnaBase::C => 'C',
+            DnaBase::G => 'G',
+            DnaBase::T => 'T',
         };
         write!(f, "{}", c)
     }
@@ -37,7 +65,10 @@ impl fmt::Display for DnaBase {
 impl fmt::Display for RnaBase {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let c = match self {
-            RnaBase::A => 'A', RnaBase::C => 'C', RnaBase::G => 'G', RnaBase::U => 'U',
+            RnaBase::A => 'A',
+            RnaBase::C => 'C',
+            RnaBase::G => 'G',
+            RnaBase::U => 'U',
         };
         write!(f, "{}", c)
     }
@@ -93,7 +124,10 @@ impl fmt::Display for DnaSequence {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for base in &self.0 {
             let c = match base {
-                DnaBase::A => 'A', DnaBase::C => 'C', DnaBase::G => 'G', DnaBase::T => 'T',
+                DnaBase::A => 'A',
+                DnaBase::C => 'C',
+                DnaBase::G => 'G',
+                DnaBase::T => 'T',
             };
             write!(f, "{}", c)?;
         }
@@ -105,7 +139,12 @@ impl DnaSequence {
     /// Counts the occurrences of each distinct nucleotide in the sequence.
     /// Operates in O(n) time and O(1) auxiliary space.
     pub fn count_bases(&self) -> DnaBaseCounts {
-        let mut counts = DnaBaseCounts { a: 0, c: 0, g: 0, t: 0 };
+        let mut counts = DnaBaseCounts {
+            a: 0,
+            c: 0,
+            g: 0,
+            t: 0,
+        };
 
         for base in &self.0 {
             match base {
@@ -122,7 +161,8 @@ impl DnaSequence {
     /// Transcribes the DNA sequence into an RNA sequence by swapping Thymine (T) for Uracil (U).
     /// Operates in O(n) time and returns a typed RnaSequence wrapper.
     pub fn transcribe(&self) -> RnaSequence {
-        let rna_bases = self.0
+        let rna_bases = self
+            .0
             .iter()
             .map(|base| match base {
                 DnaBase::A => RnaBase::A,
@@ -133,6 +173,25 @@ impl DnaSequence {
             .collect();
 
         RnaSequence(rna_bases)
+    }
+
+    /// Returns the reverse complement of the DNA sequence.
+    /// Reverses the order of the bases and swaps each nucleotide with its complement (A <-> T, C <-> G).
+    /// Operates in O(n) time.
+    pub fn reverse_complement(&self) -> DnaSequence {
+        let rev_comp_bases = self
+            .0
+            .iter()
+            .rev()
+            .map(|base| match base {
+                DnaBase::A => DnaBase::T,
+                DnaBase::C => DnaBase::G,
+                DnaBase::G => DnaBase::C,
+                DnaBase::T => DnaBase::A,
+            })
+            .collect();
+
+        DnaSequence(rev_comp_bases)
     }
 }
 
@@ -158,7 +217,10 @@ impl fmt::Display for RnaSequence {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for base in &self.0 {
             let c = match base {
-                RnaBase::A => 'A', RnaBase::C => 'C', RnaBase::G => 'G', RnaBase::U => 'U',
+                RnaBase::A => 'A',
+                RnaBase::C => 'C',
+                RnaBase::G => 'G',
+                RnaBase::U => 'U',
             };
             write!(f, "{}", c)?;
         }
@@ -188,8 +250,14 @@ mod tests {
     fn test_dna_parsing_valid() {
         let input = "AGCTagct";
         let expected = vec![
-            DnaBase::A, DnaBase::G, DnaBase::C, DnaBase::T,
-            DnaBase::A, DnaBase::G, DnaBase::C, DnaBase::T,
+            DnaBase::A,
+            DnaBase::G,
+            DnaBase::C,
+            DnaBase::T,
+            DnaBase::A,
+            DnaBase::G,
+            DnaBase::C,
+            DnaBase::T,
         ];
 
         let parsed: Vec<DnaBase> = input
@@ -227,7 +295,8 @@ mod serialization_tests {
         let original_raw = "GATGGAACTTGACTACGTAAATT";
 
         // 1. Deserialize (String -> Struct)
-        let sequence: DnaSequence = original_raw.parse()
+        let sequence: DnaSequence = original_raw
+            .parse()
             .expect("Valid DNA string should deserialize seamlessly");
 
         // Verify internal structural representation
@@ -246,7 +315,8 @@ mod serialization_tests {
         let original_raw = "GAUGGAACUUGACUACGUAAAUU";
 
         // 1. Deserialize
-        let sequence: RnaSequence = original_raw.parse()
+        let sequence: RnaSequence = original_raw
+            .parse()
             .expect("Valid RNA string should deserialize seamlessly");
 
         // 2. Serialize
@@ -276,16 +346,22 @@ mod algorithm_tests {
     #[test]
     fn test_count_empty_dna_sequence() {
         let empty_seq = DnaSequence(vec![]);
-        let expected = DnaBaseCounts { a: 0, c: 0, g: 0, t: 0 };
+        let expected = DnaBaseCounts {
+            a: 0,
+            c: 0,
+            g: 0,
+            t: 0,
+        };
         assert_eq!(empty_seq.count_bases(), expected);
     }
 
     #[test]
-    fn test_count_dna_sequenc() {
+    fn test_count_dna_bases() {
         let sample_input = "AGCTTTTCATTCTGACTGCAACGGGCAATATGTCTCTGTGTGGATTAAAAAAAGAGTGTCTGATAGCAGC";
         let expected_output = "20 12 17 21";
 
-        let sequence: DnaSequence = sample_input.parse()
+        let sequence: DnaSequence = sample_input
+            .parse()
             .expect("Sample dataset must contain only valid DNA symbols");
 
         let counts = sequence.count_bases();
@@ -296,5 +372,36 @@ mod algorithm_tests {
         assert_eq!(counts.t, 21);
 
         assert_eq!(counts.to_string(), expected_output);
+    }
+
+    #[test]
+    fn test_reverse_complement_empty() {
+        let empty_seq = DnaSequence(vec![]);
+        assert_eq!(empty_seq.reverse_complement(), DnaSequence(vec![]));
+    }
+
+    #[test]
+    fn test_reverse_complement_single_bases() {
+        let a = DnaSequence(vec![DnaBase::A]);
+        let t = DnaSequence(vec![DnaBase::T]);
+        let c = DnaSequence(vec![DnaBase::C]);
+        let g = DnaSequence(vec![DnaBase::G]);
+
+        assert_eq!(a.reverse_complement(), t);
+        assert_eq!(t.reverse_complement(), a);
+        assert_eq!(c.reverse_complement(), g);
+        assert_eq!(g.reverse_complement(), c);
+    }
+
+    #[test]
+    fn test_reverse_complement_sequence() {
+        // "AAAACCCGGT" reversed is "TGGCCCAAAA", complemented is "ACCGGGTTTT"
+        let input = "AAAACCCGGT";
+        let expected_output = "ACCGGGTTTT";
+
+        let sequence: DnaSequence = input.parse().expect("Valid DNA string");
+
+        let result = sequence.reverse_complement();
+        assert_eq!(result.to_string(), expected_output);
     }
 }
