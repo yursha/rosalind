@@ -3,7 +3,7 @@ An idiomatic, type-safe bioinformatics library and CLI toolkit written in Rust, 
 This project is under active development. The core library architecture is being built incrementally by implementing robust, production-grade solutions to the Rosalind bioinformatics problem set. 
 It is not yet published on crates.io, but the library engine and existing CLI tools are fully functional and test-verified locally.
 
-* **`src/io/fasta.rs`**: Streaming Multi-FASTA dataset parsing (Planned).
+* **`src/io/fasta.rs`**: Streaming Multi-FASTA dataset parsing.
 * **`src/sequence/dna.rs`**: Nucleotide operations, transcription, reverse complements.
 * **`src/sequence/rna.rs`**: Translation, codon mapping, splice site analysis (Planned).
 * **`src/sequence/protein.rs`**: Peptide profiling, molecular weight calculations (Planned).
