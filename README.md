@@ -4,6 +4,8 @@ This project is under active development. The core library architecture is being
 It is not yet published on crates.io, but the library engine and existing CLI tools are fully functional and test-verified locally.
 
 * **`src/dna`**: Nucleotide operations, transcription, reverse complements.
+* **`src/dynamics`**: Discrete-time population projection models.
+* **`src/genetics`**: Mendelian inheritance, probability of allele distribution.
 * **`src/rna`**: Translation, codon mapping, splice site analysis (Planned).
 * **`src/protein`**: Peptide profiling, molecular weight calculations (Planned).
-* **`src/bin/`**: A suite of lightweight, high-performance CLI utilities built on top of the core library.
+* **`src/bin/`**: A suite of lightweight CLI utilities built on top of the libraries above.
