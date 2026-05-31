@@ -116,7 +116,10 @@ AAAAA
 
         let rec_1 = parser.next().unwrap().unwrap();
         assert_eq!(rec_1.id, "ID_1234");
-        assert_eq!(rec_1.description, Some("Extended descriptive metadata field".to_string()));
+        assert_eq!(
+            rec_1.description,
+            Some("Extended descriptive metadata field".to_string())
+        );
         assert_eq!(rec_1.sequence, "GATTACAGATTACA");
 
         let rec_2 = parser.next().unwrap().unwrap();
