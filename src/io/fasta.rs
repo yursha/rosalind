@@ -105,22 +105,22 @@ mod tests {
     #[test]
     fn test_valid_standard_multi_fasta() {
         let fasta_payload = "
->Rosalind_1234 Extended descriptive metadata field
+>ID_1234 Extended descriptive metadata field
 GATTACA
 GATTACA
->Rosalind_5678
+>ID_5678
 AAAAA
         ";
 
         let mut parser = FastaReader::new(BufReader::new(fasta_payload.as_bytes()));
 
         let rec_1 = parser.next().unwrap().unwrap();
-        assert_eq!(rec_1.id, "Rosalind_1234");
+        assert_eq!(rec_1.id, "ID_1234");
         assert_eq!(rec_1.description, Some("Extended descriptive metadata field".to_string()));
         assert_eq!(rec_1.sequence, "GATTACAGATTACA");
 
         let rec_2 = parser.next().unwrap().unwrap();
-        assert_eq!(rec_2.id, "Rosalind_5678");
+        assert_eq!(rec_2.id, "ID_5678");
         assert_eq!(rec_2.description, None);
         assert_eq!(rec_2.sequence, "AAAAA");
 
