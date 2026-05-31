@@ -1,4 +1,4 @@
-use rosalind_rs::dynamics::{AgeStructuredModel, PopulationState};
+use rosalind_rs::simulation::dynamics::{AgeStructuredModel, PopulationState};
 use std::env;
 use std::fs;
 use std::process;

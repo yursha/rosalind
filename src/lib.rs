@@ -1,5 +1,3 @@
-pub mod dna;
-pub mod dynamics;
-pub mod genetics;
-pub mod protein;
-pub mod rna;
+pub mod io;
+pub mod sequence;
+pub mod simulation;

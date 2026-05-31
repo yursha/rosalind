@@ -1,4 +1,4 @@
-use rosalind_rs::genetics::AllelePopulation;
+use rosalind_rs::simulation::genetics::AllelePopulation;
 use std::env;
 use std::fs;
 use std::process;

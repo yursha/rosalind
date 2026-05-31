@@ -1,7 +1,7 @@
 use std::fmt;
 use std::str::FromStr;
 
-use crate::rna::{RnaBase, RnaSequence};
+use crate::sequence::rna::{RnaBase, RnaSequence};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct InvalidDnaSymbolError(pub char);
