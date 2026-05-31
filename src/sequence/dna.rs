@@ -6,6 +6,24 @@ use crate::sequence::rna::{RnaBase, RnaSequence};
 #[derive(Debug, PartialEq, Eq)]
 pub struct InvalidDnaSymbolError(pub char);
 
+#[derive(Debug, PartialEq, Eq)]
+pub struct LengthMismatchError {
+    pub sequence_len: usize,
+    pub other_len: usize,
+}
+
+impl std::fmt::Display for LengthMismatchError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Hamming distance undefined for unequal lengths: {} vs {}",
+            self.sequence_len, self.other_len
+        )
+    }
+}
+
+impl std::error::Error for LengthMismatchError {}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DnaBase {
     A,
@@ -151,6 +169,29 @@ impl DnaSequence {
             .count();
 
         (gc_count as f64 / self.0.len() as f64) * 100.0
+    }
+
+    /// Computes the Hamming distance between this sequence and another.
+    ///
+    /// Returns a `LengthMismatchError` if the sequences are not of equal length.
+    /// Operates in O(n) time and O(1) auxiliary space.
+    pub fn hamming_distance(&self, other: &Self) -> Result<usize, LengthMismatchError> {
+        if self.0.len() != other.0.len() {
+            return Err(LengthMismatchError {
+                sequence_len: self.0.len(),
+                other_len: other.0.len(),
+            });
+        }
+
+        // Zip the two iterators together and count positions where elements differ
+        let distance = self
+            .0
+            .iter()
+            .zip(other.0.iter())
+            .filter(|(b1, b2)| b1 != b2)
+            .count();
+
+        Ok(distance)
     }
 }
 
@@ -331,5 +372,43 @@ mod algorithm_tests {
         let sequence: DnaSequence = "GGCCGGCCGG".parse().expect("Valid test string");
 
         assert_eq!(sequence.gc_content(), 100.0);
+    }
+
+    #[test]
+    fn test_hamming_distance_identical() {
+        let seq1: DnaSequence = "GAGCCTACTAACGGGAT".parse().expect("Valid DNA");
+        let seq2: DnaSequence = "GAGCCTACTAACGGGAT".parse().expect("Valid DNA");
+
+        assert_eq!(seq1.hamming_distance(&seq2), Ok(0));
+    }
+
+    #[test]
+    fn test_hamming_distance_different() {
+        let seq1: DnaSequence = "GAGCCTACTAACGGGAT".parse().expect("Valid DNA");
+        let seq2: DnaSequence = "CATCGTAATGACGGCCT".parse().expect("Valid DNA");
+
+        // Differences at positions: 0, 2, 3, 5, 8, 10, 15 (7 total mismatches)
+        assert_eq!(seq1.hamming_distance(&seq2), Ok(7));
+    }
+
+    #[test]
+    fn test_hamming_distance_empty() {
+        let seq1 = DnaSequence(vec![]);
+        let seq2 = DnaSequence(vec![]);
+
+        assert_eq!(seq1.hamming_distance(&seq2), Ok(0));
+    }
+
+    #[test]
+    fn test_hamming_distance_length_mismatch() {
+        let seq1: DnaSequence = "GATTACA".parse().expect("Valid DNA");
+        let seq2: DnaSequence = "GATTACAG".parse().expect("Valid DNA");
+
+        let expected_err = Err(LengthMismatchError {
+            sequence_len: 7,
+            other_len: 8,
+        });
+
+        assert_eq!(seq1.hamming_distance(&seq2), expected_err);
     }
 }

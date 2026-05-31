@@ -36,6 +36,14 @@ enum Commands {
     Revcomp,
     /// Compute the GC-content percentage of the DNA sequence
     GcContent,
+    /// Compute the Hamming distance pairwise across sequences
+    Hamming,
+}
+
+/// A unified internal representation of a sequence entry
+struct SequenceRecord {
+    id: String,
+    sequence: DnaSequence,
 }
 
 fn main() {
@@ -53,52 +61,92 @@ fn main() {
         .unwrap_or_else(|e| panic!("Failed to open file {:?}: {}", cli.input_file, e));
     let mut reader = BufReader::new(file);
 
-    match format {
+    let records: Vec<SequenceRecord> = match format {
         InputFormat::Raw => {
             let mut input_str = String::new();
             reader
                 .read_to_string(&mut input_str)
                 .expect("Failed to read raw input data");
-            let sequence: DnaSequence = input_str
-                .trim()
-                .parse()
-                .expect("Failed to parse DNA sequence");
 
-            execute_command_on_sequence(&sequence, &cli.command, None);
+            input_str
+                .lines()
+                .map(|l| l.trim())
+                .filter(|l| !l.is_empty())
+                .enumerate()
+                .map(|(idx, line)| {
+                    let sequence = line.parse().expect("Failed to parse raw DNA sequence");
+                    SequenceRecord {
+                        id: format!("Line {}", idx + 1),
+                        sequence,
+                    }
+                })
+                .collect()
         }
         InputFormat::Fasta => {
             let fasta_parser = FastaReader::new(reader);
+            fasta_parser
+                .map(|result| {
+                    let record = result.expect("Error parsing FASTA stream");
+                    let sequence = record
+                        .sequence
+                        .parse()
+                        .expect("Malformed DNA found in FASTA record");
+                    SequenceRecord {
+                        id: record.id,
+                        sequence,
+                    }
+                })
+                .collect()
+        }
+    };
 
-            for result in fasta_parser {
-                let record = result.expect("Error encountered while parsing FASTA stream");
-                let sequence: DnaSequence = record
-                    .sequence
-                    .parse()
-                    .expect("Malformed DNA found in FASTA record payload");
+    if records.is_empty() {
+        eprintln!("Warning: No DNA sequences found to process.");
+        return;
+    }
 
-                // Print a label for clarity when handling multiple entries
-                execute_command_on_sequence(&sequence, &cli.command, Some(&record.id));
+    match cli.command {
+        Commands::Hamming => {
+            // Process sequences pairwise in sequential blocks of two
+            for chunk in records.chunks(2) {
+                match chunk {
+                    [rec1, rec2] => match rec1.sequence.hamming_distance(&rec2.sequence) {
+                        Ok(dist) => println!("Dist[{} <-> {}]: {}", rec1.id, rec2.id, dist),
+                        Err(e) => {
+                            eprintln!("Error comparing {} and {}: {}", rec1.id, rec2.id, e);
+                            std::process::exit(1);
+                        }
+                    },
+                    [lone_rec] => {
+                        eprintln!("Warning: Sequence '{}' is unpaired and was skipped for Hamming distance calculation.", lone_rec.id);
+                    }
+                    _ => unreachable!(),
+                }
+            }
+        }
+        _ => {
+            for rec in &records {
+                process_sequence(&rec.sequence, &cli.command, &rec.id);
             }
         }
     }
 }
 
-/// Helper to handle printing outputs cleanly with optional record identifiers
-fn execute_command_on_sequence(sequence: &DnaSequence, command: &Commands, label: Option<&str>) {
-    let prefix = label.map(|id| format!("[{}] ", id)).unwrap_or_default();
-
+/// Dispatches operations that run independently on a single DNA sequence
+fn process_sequence(sequence: &DnaSequence, command: &Commands, id: &str) {
     match command {
         Commands::Count => {
-            println!("{}{}", prefix, sequence.count_bases());
+            println!("[{}] {}", id, sequence.count_bases());
         }
         Commands::Transcribe => {
-            println!("{}{}", prefix, sequence.transcribe());
+            println!("[{}] {}", id, sequence.transcribe());
         }
         Commands::Revcomp => {
-            println!("{}{}", prefix, sequence.reverse_complement());
+            println!("[{}] {}", id, sequence.reverse_complement());
         }
         Commands::GcContent => {
-            println!("{}{:.5}%", prefix, sequence.gc_content());
+            println!("[{}] {:.5}%", id, sequence.gc_content());
         }
+        Commands::Hamming => unreachable!(),
     }
 }
